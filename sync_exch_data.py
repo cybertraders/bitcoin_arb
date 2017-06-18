@@ -12,8 +12,11 @@ curr = CurrencyRates()
 
 
 def parse_data(q,k):
-    for i in range(7):
-        quotes = q.get()
+    usdaud = curr.get_rates('USD')['AUD']
+    while True:
+        try: quotes = q.get_nowait()
+        except:
+            break
         key = quotes.keys()[0]
         if not key in k:
             k[key] = {}
@@ -62,10 +65,6 @@ class Quotes:
         def a7(q):
             self.num_threads += 1
             q.put({'bitstamp':{'bstmp_usd':bitstamp()}})
-
-        # def a8(q):
-            # self.num_threads += 1
-            # q.put({'USDAUD':{'usdaud':curr.get_rates('USD')['AUD']}})
 
         for func in [a1,a2,a3,a4,a5,a6,a7]:
             t = Thread(target=func,args=(q,))
