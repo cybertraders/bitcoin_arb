@@ -25,11 +25,11 @@ class TickPitcher(ApplicationSession):
 class Ticker(object):
     def __init__(self):
         self.ticker = poloniex.Poloniex().returnTicker()
-        self._appRunner = ApplicationRunner(
-                    u"wss://api.poloniex.com:443", u"realm1"
-                    )
-        self._appProcess, self._tickThread = None, None
-        self._running = False
+        # self._appRunner = ApplicationRunner(
+                    # u"wss://api.poloniex.com:443", u"realm1"
+                    # )
+        # self._appProcess, self._tickThread = None, None
+        # self._running = False
 
     def __call__(self):
         return self.ticker
@@ -92,12 +92,13 @@ class Ticker(object):
         return (ticker()['USDT_BTC'])
 
     def get_tickers(self):
+        ticker = Ticker()
         return ticker()
 
 if __name__ == '__main__':
     import time
-    ticker = Ticker()
     while True:
+        ticker = Ticker()
         # get_quotes()
-        print ticker()
+        print ticker()['USDT_BTC']['lowestAsk']
     print("Done")

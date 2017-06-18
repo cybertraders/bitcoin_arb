@@ -5,7 +5,6 @@ from forex_python.converter import CurrencyRates
 from bitstamp_api import get_quotes as bitstamp
 import time
 
-poloniex = Ticker()
 curr = CurrencyRates()
 
 
@@ -67,13 +66,13 @@ def parse_data(quotes,k):
 
 
 def get_all_quotes(quotes):
-    polon = poloniex()
+    polon = Ticker()
     quotes['btfx_usd'] = bitfinex_quotes('btcusd')
     quotes['btfx_eth'] = bitfinex_quotes('ethbtc')
     quotes['btcm_aud'] = btc_markets_quotes('BTC','AUD')
     quotes['btcm_eth'] = btc_markets_quotes('ETH','BTC')
-    quotes['polon_usd'] = polon['USDT_BTC']
-    quotes['polon_eth'] = polon['BTC_ETH']
+    quotes['polon_usd'] = polon()['USDT_BTC']
+    quotes['polon_eth'] = polon()['BTC_ETH']
     quotes['bstmp_usd'] = bitstamp()
     quotes['usdaud'] = curr.get_rates('USD')['AUD']
     return quotes
@@ -86,7 +85,7 @@ def run():
         quotes = get_all_quotes(quotes)
         k = parse_data(quotes,k)
 
-        print k, time.time()-start
+        print k['poloniex'], time.time()-start
 
 if __name__=="__main__":
     run()
