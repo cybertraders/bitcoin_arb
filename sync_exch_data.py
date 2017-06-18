@@ -4,6 +4,7 @@ from queuedTicker import Ticker
 from forex_python.converter import CurrencyRates
 from bitstamp_api import get_quotes as bitstamp
 import time
+import traceback
 
 curr = CurrencyRates()
 
@@ -67,14 +68,30 @@ def parse_data(quotes,k):
 
 def get_all_quotes(quotes):
     polon = Ticker()
-    quotes['btfx_usd'] = bitfinex_quotes('btcusd')
-    quotes['btfx_eth'] = bitfinex_quotes('ethbtc')
-    quotes['btcm_aud'] = btc_markets_quotes('BTC','AUD')
-    quotes['btcm_eth'] = btc_markets_quotes('ETH','BTC')
-    quotes['polon_usd'] = polon()['USDT_BTC']
-    quotes['polon_eth'] = polon()['BTC_ETH']
-    quotes['bstmp_usd'] = bitstamp()
-    quotes['usdaud'] = curr.get_rates('USD')['AUD']
+    try: quotes['btfx_usd'] = bitfinex_quotes('btcusd')
+    except: print traceback.format_exc()
+
+    try: quotes['btfx_eth'] = bitfinex_quotes('ethbtc')
+    except: print traceback.format_exc()
+
+    try: quotes['btcm_aud'] = btc_markets_quotes('BTC','AUD')
+    except: print traceback.format_exc()
+
+    try: quotes['btcm_eth'] = btc_markets_quotes('ETH','BTC')
+    except: print traceback.format_exc()
+
+    try: quotes['polon_usd'] = polon()['USDT_BTC']
+    except: print traceback.format_exc()
+
+    try: quotes['polon_eth'] = polon()['BTC_ETH']
+    except: print traceback.format_exc()
+
+    try: quotes['bstmp_usd'] = bitstamp()
+    except: print traceback.format_exc()
+
+    try: quotes['usdaud'] = curr.get_rates('USD')['AUD']
+    except: print traceback.format_exc()
+
     return quotes
 
 def run():
