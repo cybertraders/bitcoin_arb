@@ -2,6 +2,7 @@ from tickerlineBTCAUD import get_request as btc_markets_quotes
 from bitfinex_basic import get_quotes as bitfinex_quotes
 from queuedTicker import Ticker
 from forex_python.converter import CurrencyRates
+from bitstamp_api import get_quotes as bitstamp
 import time
 
 poloniex = Ticker()
@@ -52,6 +53,16 @@ def parse_data(quotes,k):
                      'ask':float(quotes['btfx_eth']['asks'][0]['price'])
                      },
                 }
+
+    k['bitstamp'] = {'btcusd':
+                    {'bid':float(quotes['bstmp_usd']['bid']),
+                     'ask':float(quotes['bstmp_usd']['ask'])
+                     },
+                'btcaud':
+                    {'bid':float(quotes['bstmp_usd']['bid'])*quotes['usdaud'],
+                    'ask':float(quotes['bstmp_usd']['ask'])*quotes['usdaud']
+                    },
+                }
     return k
 
 
@@ -63,6 +74,7 @@ def get_all_quotes(quotes):
     quotes['btcm_eth'] = btc_markets_quotes('ETH','BTC')
     quotes['polon_usd'] = polon['USDT_BTC']
     quotes['polon_eth'] = polon['BTC_ETH']
+    quotes['bstmp_usd'] = bitstamp()
     quotes['usdaud'] = curr.get_rates('USD')['AUD']
     return quotes
 
