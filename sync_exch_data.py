@@ -5,105 +5,88 @@ from forex_python.converter import CurrencyRates
 from bitstamp_api import get_quotes as bitstamp
 import time
 import traceback
+from threading import Thread
+import Queue
 
 curr = CurrencyRates()
 
 
-def parse_data(quotes,k):
-    k['poloniex'] = {'btcusd':
-                    {'bid':float(quotes['polon_usd']['highestBid']),
-                    'ask':float(quotes['polon_usd']['lowestAsk'])
-                    },
-                'btcaud':
-                    {'bid':float(quotes['polon_usd']['highestBid'])*quotes['usdaud'],
-                    'ask':float(quotes['polon_usd']['lowestAsk'])*quotes['usdaud']
-                    },
-                'btceth':
-                    {'bid':float(quotes['polon_eth']['highestBid']),
-                    'ask':float(quotes['polon_eth']['lowestAsk'])
-                    },
-            }
+def parse_data(q,k):
+    for i in range(7):
+        quotes = q.get()
+        key = quotes.keys()[0]
+        if not key in k:
+            k[key] = {}
+        if not quotes[key].keys()[0] in k[key]:
+            k[key][quotes[key].keys()[0]] = {}
+        secondary_key = quotes[key].keys()[0]
+        if key=='poloniex':
+            quotes[key][secondary_key]['ask'] = quotes[key][secondary_key]['lowestAsk']
+            quotes[key][secondary_key]['bid'] = quotes[key][secondary_key]['highestBid']
+        try: print '--->', quotes[key][secondary_key]['ask'],key
+        except: print 'error',quotes,key
 
 
-    k['btcmarkets'] = {'btcusd':
-                    {'bid':float(quotes['btcm_aud']['bid'])/quotes['usdaud'],
-                     'ask':float(quotes['btcm_aud']['ask'])/quotes['usdaud']
-                     },
-                'btcaud':
-                    {'bid':float(quotes['btcm_aud']['bid']),
-                    'ask':float(quotes['btcm_aud']['ask'])
-                    },
-                'btceth':
-                    {'bid':float(quotes['btcm_eth']['bid']),
-                    'ask':float(quotes['btcm_eth']['ask'])
-                    },
-            }
-
-
-    k['bitfinex'] = {'btcusd':
-                    {'bid':float(quotes['btfx_usd']['bids'][0]['price']),
-                     'ask':float(quotes['btfx_usd']['asks'][0]['price'])
-                     },
-                'btcaud':
-                    {'bid':float(quotes['btfx_usd']['bids'][0]['price'])/quotes['usdaud'],
-                    'ask':float(quotes['btfx_usd']['asks'][0]['price'])/quotes['usdaud']
-                    },
-                'btceth':
-                    {'bid':float(quotes['btfx_eth']['bids'][0]['price']),
-                     'ask':float(quotes['btfx_eth']['asks'][0]['price'])
-                     },
-                }
-
-    k['bitstamp'] = {'btcusd':
-                    {'bid':float(quotes['bstmp_usd']['bid']),
-                     'ask':float(quotes['bstmp_usd']['ask'])
-                     },
-                'btcaud':
-                    {'bid':float(quotes['bstmp_usd']['bid'])*quotes['usdaud'],
-                    'ask':float(quotes['bstmp_usd']['ask'])*quotes['usdaud']
-                    },
-                }
     return k
 
+class Quotes:
+    def get_all_quotes(self,quotes):
+        polon = Ticker()
+        q = Queue.Queue()
+        self.num_threads = 0
 
-def get_all_quotes(quotes):
-    polon = Ticker()
-    try: quotes['btfx_usd'] = bitfinex_quotes('btcusd')
-    except: print traceback.format_exc()
+        def a1(q):
+            self.num_threads += 1
+            q.put({'bitfinex':{'btfx_usd':bitfinex_quotes('btcusd')}})
 
-    try: quotes['btfx_eth'] = bitfinex_quotes('ethbtc')
-    except: print traceback.format_exc()
+        def a2(q):
+            self.num_threads += 1
+            q.put({'bitfinex':{'btfx_eth':bitfinex_quotes('ethbtc')}})
 
-    try: quotes['btcm_aud'] = btc_markets_quotes('BTC','AUD')
-    except: print traceback.format_exc()
+        def a3(q):
+            self.num_threads += 1
+            q.put({'btcmarkets':{'btcm_aud':btc_markets_quotes('BTC','AUD')}})
 
-    try: quotes['btcm_eth'] = btc_markets_quotes('ETH','BTC')
-    except: print traceback.format_exc()
+        def a4(q):
+            self.num_threads += 1
+            q.put({'btcmarkets':{'btcm_eth':btc_markets_quotes('ETH','BTC')}})
 
-    try: quotes['polon_usd'] = polon()['USDT_BTC']
-    except: print traceback.format_exc()
+        def a5(q):
+            self.num_threads += 1
+            q.put({'poloniex':{'polon_usd':polon()['USDT_BTC']}})
 
-    try: quotes['polon_eth'] = polon()['BTC_ETH']
-    except: print traceback.format_exc()
+        def a6(q):
+            self.num_threads += 1
+            q.put({'poloniex':{'polon_eth':polon()['BTC_ETH']}})
 
-    try: quotes['bstmp_usd'] = bitstamp()
-    except: print traceback.format_exc()
+        def a7(q):
+            self.num_threads += 1
+            q.put({'bitstamp':{'bstmp_usd':bitstamp()}})
 
-    try: quotes['usdaud'] = curr.get_rates('USD')['AUD']
-    except: print traceback.format_exc()
+        # def a8(q):
+            # self.num_threads += 1
+            # q.put({'USDAUD':{'usdaud':curr.get_rates('USD')['AUD']}})
 
-    return quotes
+        for func in [a1,a2,a3,a4,a5,a6,a7]:
+            t = Thread(target=func,args=(q,))
+            t.start()
+
+        while self.num_threads < 7:
+            pass
+
+        return q
 
 def run():
     k = {}
     quotes = {}
+    get_q = Quotes()
     while True:
         start = time.time()
-        quotes = get_all_quotes(quotes)
+        quotes = get_q.get_all_quotes(quotes)
         k = parse_data(quotes,k)
 
-        print k#['poloniex']
-        print 'Download time:',time.time()-start
+        # print k#['poloniex']
+        # print 'Download time:',time.time()-start
 
 if __name__=="__main__":
     run()

@@ -44,8 +44,8 @@ class Ticker(object):
             else:
                 self.ticker[tick[0]] = {
                     'last':tick[1],
-                    'lowestAsk':tick[2],
-                    'highestBid':tick[3],
+                    'ask':tick[2],
+                    'bid':tick[3],
                     'percentChange':tick[4],
                     'baseVolume':tick[5],
                     'quoteVolume':tick[6],

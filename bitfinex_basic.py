@@ -12,10 +12,14 @@ def get_quotes(symbol):
     # print(client.today(symbol))
     # print(client.stats(symbol))
 
+    k = {}
     parameters = {'limit_asks': 1, 'limit_bids': 1}
 
-    # print(client.lendbook('btc', parameters))
-    return (client.order_book(symbol, parameters))
+    q = (client.order_book(symbol, parameters))
+    k['bid'] = q['bids'][0]['price']
+    k['ask'] = q['asks'][0]['price']
+
+    return k
 
 def run():
     while True:
