@@ -4,38 +4,56 @@ from queuedTicker import Ticker
 from forex_python.converter import CurrencyRates
 import time
 
-def parse_data(polon_usd,btcm,btfx,usdaud,k):
-    k['polon'] = {'btcusd': {'bid':float(polon_usd['highestBid']),'ask':float(polon_usd['lowestAsk'])},
-            'btcaud': {'bid':float(polon_usd['highestBid'])*usdaud,'ask':float(polon_usd['lowestAsk'])*usdaud},
+def parse_data(quotes,k):
+    k['polon'] = {'btcusd':
+                {'bid':float(quotes['polon_usd']['highestBid']),
+                 'ask':float(quotes['polon_usd']['lowestAsk'])
+             },
+            'btcaud':
+                {'bid':float(quotes['polon_usd']['highestBid'])*quotes['usdaud'],
+                 'ask':float(quotes['polon_usd']['lowestAsk'])*quotes['usdaud']
+                 },
             }
 
 
-    k['btcm'] = {'btcusd':{'bid':float(btcm['bid'])/usdaud,'ask':float(btcm['ask'])/usdaud},
-            'btcaud':{'bid':float(btcm['bid']),'ask':float(btcm['ask'])},
+    k['btcm'] = {'btcusd':
+                    {'bid':float(quotes['btcm_aud']['bid'])/quotes['usdaud'],
+                     'ask':float(quotes['btcm_aud']['ask'])/quotes['usdaud']
+                     },
+                'btcaud':
+                    {'bid':float(quotes['btcm_aud']['bid']),
+                    'ask':float(quotes['btcm_aud']['ask'])
+                    },
             }
 
 
-    k['btfx'] = {'btcusd':{'bid':float(btfx['bids'][0]['price']),
-                        'ask':float(btfx['asks'][0]['price'])},
-                'btcaud':{'bid':float(btfx['bids'][0]['price'])/usdaud,
-                    'ask':float(btfx['asks'][0]['price'])/usdaud}}
+    k['btfx'] = {'btcusd':
+                    {'bid':float(quotes['btfx_usd']['bids'][0]['price']),
+                     'ask':float(quotes['btfx_usd']['asks'][0]['price'])
+                     },
+                'btcaud':
+                    {'bid':float(quotes['btfx_usd']['bids'][0]['price'])/quotes['usdaud'],
+                    'ask':float(quotes['btfx_usd']['asks'][0]['price'])/quotes['usdaud']
+                    }
+                }
     return k
 
 
-c = CurrencyRates()
 poloniex = Ticker()
+c = CurrencyRates()
 k = {}
+quotes = {}
 while True:
-    start = time.time()
-    btfx = bitfinex_quotes('btcusd')
-    btfx_eth = bitfinex_quotes('ethbtc')
-    btcm = btc_markets_quotes('BTC','AUD')
-    btcm = btc_markets_quotes('ETH','BTC')
     polon = poloniex()
-    polon_usd = polon['USDT_BTC']
-    polon_eth = polon['BTC_ETH']
+    start = time.time()
+    quotes['btfx_usd'] = bitfinex_quotes('btcusd')
+    quotes['btfx_eth'] = bitfinex_quotes('ethbtc')
+    quotes['btcm_aud'] = btc_markets_quotes('BTC','AUD')
+    quotes['btcm_eth'] = btc_markets_quotes('ETH','BTC')
+    quotes['polon_usd'] = polon['USDT_BTC']
+    quotes['polon_eth'] = polon['BTC_ETH']
 
-    usdaud = c.get_rates('USD')['AUD']
-    k = parse_data(polon_usd,btcm,btfx,usdaud,k)
+    quotes['usdaud'] = c.get_rates('USD')['AUD']
+    k = parse_data(quotes,k)
 
     print k, time.time()-start
