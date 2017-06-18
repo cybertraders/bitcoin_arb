@@ -85,7 +85,8 @@ def run():
         quotes = get_all_quotes(quotes)
         k = parse_data(quotes,k)
 
-        print k['poloniex'], time.time()-start
+        print k#['poloniex']
+        print 'Download time:',time.time()-start
 
 if __name__=="__main__":
     run()
