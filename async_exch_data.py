@@ -7,12 +7,15 @@ import time
 import traceback
 from threading import Thread
 import Queue
+import cPickle
+from pylab import *
 
 curr = CurrencyRates()
 
 
 def parse_data(q,k):
     usdaud = curr.get_rates('USD')['AUD']
+    ion()
     while True:
         try: quotes = q.get_nowait()
         except:
@@ -24,11 +27,24 @@ def parse_data(q,k):
             k[key][quotes[key].keys()[0]] = {}
         secondary_key = quotes[key].keys()[0]
         if key=='poloniex':
-            quotes[key][secondary_key]['ask'] = quotes[key][secondary_key]['lowestAsk']
-            quotes[key][secondary_key]['bid'] = quotes[key][secondary_key]['highestBid']
+            k[key][secondary_key]['ask'] = quotes[key][secondary_key]['lowestAsk']
+            k[key][secondary_key]['bid'] = quotes[key][secondary_key]['highestBid']
+        else:
+            k[key][secondary_key]['ask'] = quotes[key][secondary_key]['ask']
+            k[key][secondary_key]['bid'] = quotes[key][secondary_key]['bid']
         try: print '--->', quotes[key][secondary_key]['ask'],key
         except: print 'error',quotes,key
-
+        # cPickle.dump(quotes,open('/home/tom/data/bitarb.pick','w'))
+        try:
+            clf()
+            if 'polon_eth' in k['poloniex']:
+                plot([1,1],[k['poloniex']['polon_eth']['bid'],k['poloniex']['polon_eth']['ask']],'-',lw = 15)
+                xlim([0,3])
+            if 'btcm_eth' in k['btcmarkets']:
+                plot([2,2],[k['btcmarkets']['btcm_eth']['bid'],k['btcmarkets']['btcm_eth']['ask']],'-',lw = 15)
+            draw()
+            pause(0.1)
+        except: print traceback.format_exc()
 
     return k
 
