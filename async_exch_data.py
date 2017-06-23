@@ -38,10 +38,13 @@ def parse_data(q,k):
         try:
             clf()
             if 'polon_eth' in k['poloniex']:
-                plot([1,1],[k['poloniex']['polon_eth']['bid'],k['poloniex']['polon_eth']['ask']],'-',lw = 15)
-                xlim([0,3])
+                plot([1.9,1.9],[k['poloniex']['polon_eth']['bid'],k['poloniex']['polon_eth']['ask']],'-',lw = 65,label='polon')
+                xlim([1.5,2.5])
             if 'btcm_eth' in k['btcmarkets']:
-                plot([2,2],[k['btcmarkets']['btcm_eth']['bid'],k['btcmarkets']['btcm_eth']['ask']],'-',lw = 15)
+                plot([2,2],[k['btcmarkets']['btcm_eth']['bid'],k['btcmarkets']['btcm_eth']['ask']],'-',lw = 65,label='btcm')
+            if 'btfx_eth' in k['bitfinex']:
+                plot([2.1,2.1],[k['bitfinex']['btfx_eth']['bid'],k['bitfinex']['btfx_eth']['ask']],'-',lw = 65,label='btfx')
+            # legend(loc='best')
             draw()
             pause(0.1)
         except: print traceback.format_exc()
@@ -82,9 +85,10 @@ class Quotes:
             self.num_threads += 1
             q.put({'bitstamp':{'bstmp_usd':bitstamp()}})
 
+        t = []
         for func in [a1,a2,a3,a4,a5,a6,a7]:
-            t = Thread(target=func,args=(q,))
-            t.start()
+            t.append(Thread(target=func,args=(q,)))
+            t[-1].start()
 
         while self.num_threads < 7:
             pass
