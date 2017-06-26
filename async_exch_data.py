@@ -40,13 +40,21 @@ def parse_data(q,k):
             clf()
             if 'polon_eth' in k['poloniex']:
                 plot([1.9,1.9],[k['poloniex']['polon_eth']['bid'],k['poloniex']['polon_eth']['ask']],'-',lw = 65,label='polon')
+                polon_last = [k['poloniex']['polon_eth']['bid'],k['poloniex']['polon_eth']['ask']]
                 xlim([1.5,2.5])
+            else: plot([1.9,1.9],polon_last,'-',lw = 65,label='polon')
             if 'btcm_eth' in k['btcmarkets']:
                 plot([2,2],[k['btcmarkets']['btcm_eth']['bid'],k['btcmarkets']['btcm_eth']['ask']],'-',lw = 65,label='btcm')
+                btcm_last = [k['btcmarkets']['btcm_eth']['bid'],k['btcmarkets']['btcm_eth']['ask']]
+            else: plot([2,2],btcm_last,'-',lw = 65,label='btcm')
             if 'btfx_eth' in k['bitfinex']:
                 plot([2.1,2.1],[k['bitfinex']['btfx_eth']['bid'],k['bitfinex']['btfx_eth']['ask']],'-',lw = 65,label='btfx')
+                btfx_last = [k['bitfinex']['btfx_eth']['bid'],k['bitfinex']['btfx_eth']['ask']]
+            else: plot([2.1,2.1],btfx_last,'-',lw = 65,label='btfx')
             if 'kraken_eth' in k['kraken']:
                 plot([2.2,2.2],[k['kraken']['kraken_eth']['bid'],k['kraken']['kraken_eth']['ask']],'-',lw = 65,label='kraken')
+                kraken_last = [k['kraken']['kraken_eth']['bid'],k['kraken']['kraken_eth']['ask']]
+            else: plot([2.2,2.2],kraken_last,'-',lw = 65,label='kraken')
             # legend(loc='best')
             draw()
             pause(0.1)
