@@ -3,6 +3,7 @@ from bitfinex_basic import get_quotes as bitfinex_quotes
 from queuedTicker import Ticker
 from forex_python.converter import CurrencyRates
 from bitstamp_api import get_quotes as bitstamp
+from kraken_api import kraken_quotes
 import time
 import traceback
 from threading import Thread
@@ -44,6 +45,8 @@ def parse_data(q,k):
                 plot([2,2],[k['btcmarkets']['btcm_eth']['bid'],k['btcmarkets']['btcm_eth']['ask']],'-',lw = 65,label='btcm')
             if 'btfx_eth' in k['bitfinex']:
                 plot([2.1,2.1],[k['bitfinex']['btfx_eth']['bid'],k['bitfinex']['btfx_eth']['ask']],'-',lw = 65,label='btfx')
+            if 'kraken_eth' in k['kraken']:
+                plot([2.2,2.2],[k['kraken']['kraken_eth']['bid'],k['kraken']['kraken_eth']['ask']],'-',lw = 65,label='kraken')
             # legend(loc='best')
             draw()
             pause(0.1)
@@ -85,12 +88,19 @@ class Quotes:
             self.num_threads += 1
             q.put({'bitstamp':{'bstmp_usd':bitstamp()}})
 
+        def a8(q):
+            self.num_threads += 1
+            q.put({'kraken':{'kraken_eth':kraken_quotes('XETHXXBT')}})
+
         t = []
-        for func in [a1,a2,a3,a4,a5,a6,a7]:
+        for func in [a1,a2,a3,a4,a5,a6,a7,a8]:
             t.append(Thread(target=func,args=(q,)))
             t[-1].start()
 
-        while self.num_threads < 7:
+        max_iter = 100000
+        iterator = 0
+        while self.num_threads < 8 and iterator < max_iter:
+            iterator += 1
             pass
 
         return q
